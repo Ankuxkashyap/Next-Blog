@@ -1,103 +1,125 @@
+// import Image from "next/image";
+import Link from "next/link";
+import { getLatestBlogs } from "./actions/blog";
 import Image from "next/image";
+import { getIdFromCookie } from "@/lib/auth";
+import { getUser } from "./actions/user";
+import { Footer } from "@/components/Footer";
 
-export default function Home() {
+export default async function Home() {
+  const latestBlogs = await getLatestBlogs();
+  const id = await getIdFromCookie()
+  const user = await getUser(id as string)
+  // console.log("user: ",user)
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <>
+    <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-black to-gray-900 justify-between p-6">
+      <div className="z-10 w-full max-w-6xl mt-16 flex flex-col md:flex-row font-mono items-center justify-between gap-12">
+        <div className="flex flex-col max-w-lg">
+          <h1 className="text-5xl font-bold text-center md:text-left mb-6 text-white leading-tight">
+            Welcome to{" "}
+            <span className="md:bg-white px-2 text-gray-700">
+              BlogApp!
+            </span>
+          </h1>
+          <p className="text-xl text-center md:text-left text-gray-300 leading-relaxed">
+            Share your thoughts, ideas, and stories with the world. Connect,
+            inspire, and explore amazing content from our community.
+          </p>
+          <div className="flex items-center justify-center md:justify-start gap-6 mt-8">
+            <Link
+              href={user ? "/blog/new" :"/login"}
+              className="rounded-xl px-5 py-2 text-sm font-medium text-black bg-gray-300 hover:bg-gray-200 transition"
+            >
+              Get Started
+            </Link>
+            <Link
+              href={ user ? "/blog":"/login"}
+              className="rounded-xl px-5 py-2 text-sm font-medium bg-gray-800 text-white hover:bg-gray-700 transition"
+            >
+              Browse Blogs
+            </Link>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+
+        
+        <div className="md:w-1/2 flex justify-center">
           <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            src="/hero.jpeg"
+            alt="Hero Image"
+            width={600}
+            height={400}
+            className="rounded-2xl object-cover shadow-lg"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </div>
+      </div>
+
+      {latestBlogs.length > 0 ? (
+        <div className="z-10 w-full max-w-6xl mt-10">
+          <h2 className="md:text-4xl text-2xl font-bold text-center mb-5 text-white">
+            Latest Blogs
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+            {latestBlogs.map((blog) => (
+              <div
+                key={blog._id}
+                className="bg-gray-800 rounded-lg overflow-hidden shadow-gray-800 shadow-md hover:shadow-lg transition"
+              >
+                <img
+                  src={blog.image}
+                  alt="Blog Image"
+                  className="w-full h-[220px] object-cover"
+                />
+                <div className="p-4">
+                  <Link href={`/blog/${blog._id}`}>
+                    <h3 className="text-lg font-semibold text-white hover:underline">
+                      {blog.title}
+                    </h3>
+                  </Link>
+                  <p className="text-gray-400 mt-2 line-clamp-3">
+                    {blog.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="z-10 w-full max-w-4xl mt-20 text-center">
+          <h1 className="text-4xl font-bold text-white">No Blogs Found</h1>
+          <p className="text-gray-400 mt-3">
+            Start by creating your first blog post!
+          </p>
+        </div>
+      )}
+    <div className="flex flex-col md:flex-row items-center justify-between gap-12 p-8 rounded-2xl text-gray-300 w-full max-w-6xl mx-auto mt-16">
+      <div className="flex-1 text-center md:text-left">
+        <h2 className="text-4xl font-bold text-white mb-4">Join Our Community</h2>
+        <p className="leading-relaxed text-gray-400">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sit amet nulla auctor, 
+          vestibulum magna sed, convallis ex. Cras justo odio, dapibus ac facilisis in, egestas eget quam. 
+          Nulla vitae elit libero, a pharetra augue. Aenean commodo ligula eget lacinia consequat.
+        </p>
+      </div>
+
+      
+      <div className="flex flex-row  gap-8 text-center md:text-left">
+        <div>
+          <h3 className="text-3xl font-bold text-white">500+</h3>
+          <p className="text-sm text-gray-400">Writers</p>
+        </div>
+        <div>
+          <h3 className="text-3xl font-bold text-white">1200+</h3>
+          <p className="text-sm text-gray-400">Readers</p>
+        </div>
+        <div>
+          <h3 className="text-3xl font-bold text-white">3000+</h3>
+          <p className="text-sm text-gray-400">Blogs</p>
+        </div>
+      </div>
     </div>
+    </main>
+    <Footer/>
+    </>
   );
 }
