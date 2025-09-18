@@ -5,7 +5,7 @@ import { MobileMenuToggle } from "@/components/MobileMenuToggle";
 import { Search } from "./Search"; // client component ✅
 
 export default async function Navbar() {
-  // ✅ this is a Server Component now (no "use client", async allowed)
+  
   const id = await getIdFromCookie();
   const user = id ? await getUser(id) : null;
 
@@ -32,15 +32,15 @@ export default async function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      
       <MobileMenuToggle user={safeUser} />
 
       {/* Right Side: Search + Auth Buttons */}
-      <div className="hidden md:flex flex-row gap-4 items-center">
-        <Search /> {/* client component inside ✅ */}
+      <div className="hidden md:flex flex-row gap-5 items-center">
+        <Search />
         {user ? (
           <Link href="/blog/new">
-            <button className="bg-blue-500 text-white px-4 py-1 md:px-4 md:py-2 cursor-pointer rounded hover:bg-blue-600 transition">
+            <button className="bg-blue-500 text-white px-4 py-1 md:px-5 md:py-2 cursor-pointer rounded hover:bg-blue-600 transition">
               Create Post
             </button>
           </Link>

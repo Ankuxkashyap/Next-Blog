@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { Document } from "mongoose";
 
-export interface IBlog extends Document {
+ interface IBlog extends Document {
     title: string;
     content: string;
     description: string;
@@ -58,5 +58,5 @@ const BlogSchema = new mongoose.Schema({
 );      
 
 const Blog = mongoose.models.Blog || mongoose.model<IBlog>("Blog", BlogSchema);
-
+export type { IBlog }
 export default Blog;

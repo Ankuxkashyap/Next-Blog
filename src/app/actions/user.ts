@@ -13,7 +13,7 @@ export async function getUser(id:string) {
         createdAt?: Date;
         updatedAt?: Date;
      }
-     const user = await User.findOne({_id:id}).lean().select('-password');  
+     const user = await User.findOne({_id:id}).lean().select('-password').lean();
      return user as UserType | null; 
 
     }catch(error){

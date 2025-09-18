@@ -6,7 +6,7 @@ export const connectToDatabase = async () => {
     return;
   }
   try {
-    await mongoose.connect("mongodb://localhost:27017/blog-next",
+    await mongoose.connect(process.env.MONGODB_URI!,
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,

@@ -1,14 +1,13 @@
 "use server";
 
 import { connectToDatabase } from "@/lib/db";
-import Blog from "@/models/Blog.model";
+import Blog,{IBlog} from "@/models/Blog.model";
 import User from "@/models/User.model";
 import { getIdFromCookie } from "@/lib/auth";
-// import { Content } from "next/font/google";
 import mongoose from "mongoose";
+import Comment from "@/models/Comment.model"
 import { Types } from "mongoose";
-import { IBlog } from "@/models/Blog";
-// import { create } from "axios";
+
 
 export type BlogCreateResult = {
   success: boolean;
@@ -68,7 +67,6 @@ export async function getLatestBlogs(): Promise<BlogType[]> {
       .sort({ createdAt: -1 })
       .limit(3)
       .lean()
-    // console.log("Total blogs in DB:", await Blog.countDocuments());
     return blogs as unknown as BlogType[];
     
   } catch (err) {
@@ -105,25 +103,23 @@ interface ToggleLikeResponse {
 }
 
 export async function toggleLike(blogId: string) {
+  try{
   const userId = await getIdFromCookie();
   if (!userId) return { success: false, message: "Not authenticated" };
 
   await connectToDatabase();
-  const blog: IBlog | null = await Blog.findById(blogId);
+  const blog = await Blog.findById(blogId);
 
   if (!blog) return { success: false, message: "Blog not found" };
 
-  // Ensure likedBy is always an array
-  if (!blog.likedBy) {
-    blog.likedBy = [];
-  }
-
   const alreadyLiked = blog.likedBy.some(
-    (id : Types.ObjectId) => id.toString() === userId
+    (id: Types.ObjectId) => id.toString() === userId
   );
 
   if (alreadyLiked) {
-    blog.likedBy = blog.likedBy.filter((id) => id.toString() !== userId);
+    blog.likedBy = blog.likedBy.filter(
+      (id: Types.ObjectId) => id.toString() !== userId
+    );
   } else {
     blog.likedBy.push(new mongoose.Types.ObjectId(userId));
   }
@@ -131,5 +127,27 @@ export async function toggleLike(blogId: string) {
   blog.likes = blog.likedBy.length;
   await blog.save();
 
-  return { success: true, liked: !alreadyLiked, likesCount: blog.likes };
+  return {
+    success: true,
+    liked: !alreadyLiked,
+    likesCount: blog.likes,
+  };
+  }
+  catch(err){
+    console.log("Error toggling like:", err);
+    return { success: false, message: "Error toggling like" };
+  }
 }
+
+export async function getCommentCount(blogId: string): Promise<number> {
+  await connectToDatabase();
+  type Blog = {
+    comment:[]
+  }
+  const blog= await Blog.findById<Blog>(blogId).select("comments").lean();
+
+  if (!blog) return 0;
+
+  return blog.comments.length;
+}
+

@@ -1,10 +1,13 @@
-import { getBlogById, toggleLike } from "@/app/actions/blog";
+import { getBlogById } from "@/app/actions/blog";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getIdFromCookie } from "@/lib/auth"; 
-import { AiOutlineLike } from "react-icons/ai"
+import { getIdFromCookie } from "@/lib/auth";
+import LikeButton from "@/components/LikeButton";
+import { CommentButton } from "@/components/CommentButton";
+import {getCommentCount} from '@/app/actions/blog'
+import { CommentSection } from "@/components/CommentSection";
 import { BiSolidCommentDetail } from "react-icons/bi";
-
+import Link from "next/link";
 
 interface BlogPageProps {
   params: {
@@ -12,11 +15,17 @@ interface BlogPageProps {
   };
 }
 
-type authorType = {
+type AuthorType = {
   username: string;
   _id: string;
   email: string;
-}
+};
+
+type CommentType = {
+  content: string;
+  replier: AuthorType;
+  createdAt: Date;
+};
 
 interface BlogType {
   title: string;
@@ -25,30 +34,30 @@ interface BlogType {
   image: string;
   createdAt: Date;
   content: string;
-  author: authorType;
+  author: AuthorType;
   likes: number;
-  comments: string[];
+  likedBy: string[];
+  comments: CommentType[];
 }
 
 export default async function BlogPage({ params }: BlogPageProps) {
-    const id = params.id;
-    const blog = await getBlogById(id);
-    const userId = await getIdFromCookie();
-    
-    if (!blog) {
-        return <div>Error fetching blog</div>;
-    }
-    const data = await toggleLike(blog._id as string);
-    console.log(data);
+  const  id  =  params?.id; 
+  const blog: BlogType | null = await getBlogById(id);
+  const userId = await getIdFromCookie();
+  const commentCount = await getCommentCount(id);
+  if (!blog) {
+    return <div className="text-red-500">Error fetching blog</div>;
+  }
+  console.log( "Edit : ",userId," ",blog.author._id)
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-12 text-gray-300">
       <div className="mb-8">
         <h1 className="text-5xl font-bold text-white mb-4">{blog.title}</h1>
         <div className="flex items-center gap-4 text-gray-400 text-sm">
-          <span>By {blog.author.username!}</span>
+          <span>By {blog.author.username}</span>
           <span>•</span>
-          <span>{new Date(blog.createdAt!).toLocaleDateString()}</span>
+          <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
 
@@ -90,7 +99,8 @@ export default async function BlogPage({ params }: BlogPageProps) {
         </ReactMarkdown>
       </article>
 
-      <div className="flex items-center gap-4 mb-5 border-t border-gray-700 pt-5">
+      
+      <div className="flex items-center gap-4 mb-5 border-gray-700 pt-5">
         <div className="w-12 h-12 rounded-full bg-gray-700 text-lg flex items-center justify-center text-white font-bold">
           {blog.author.username[0].toUpperCase()}
         </div>
@@ -99,33 +109,41 @@ export default async function BlogPage({ params }: BlogPageProps) {
             <p className="font-semibold text-white">{blog.author.username}</p>
             <p className="text-gray-400 text-sm">{blog.author.email}</p>
           </div>
-          {userId === blog.author._id && (
-            <p className="cursor-pointer text-gray-300 text-xl font-medium ml-5">Edit</p>
+          {userId == blog.author._id && (
+            <Link href={`/blog/edit/${blog._id}`} className="cursor-pointer text-gray-300 text-lg font-medium ml-5">
+              Edit
+            </Link>
           )}
         </div>
       </div>
 
-<div className="flex items-center justify-between border-t border-gray-700 pt-4 text-gray-400">
-  <div className="flex items-center gap-6">
-    <div className="flex items-center gap-2 cursor-pointer hover:text-white">
-      <AiOutlineLike className="text-2xl" />
-      <span className="text-sm font-medium">{blog.likes}</span>
-    </div>
-    <div className="flex items-center gap-2 cursor-pointer hover:text-white">
-      <BiSolidCommentDetail className="text-2xl" />
-      <span className="text-sm font-medium">{blog.comments.length}</span>
-    </div>
-  </div>
-  <div className="flex items-center gap-6">
-    <button className="hover:text-white">
-      <i className="text-2xl">🔖</i>
-    </button>
-    <button className="hover:text-white">
-      <i className="text-2xl">📤</i>
-    </button>
-  </div>
-</div>
+      <div className="flex items-center justify-between border-t border-b pb-4 border-gray-700 pt-4 text-gray-400">
+        <div className="flex items-center gap-6">
+          <LikeButton
+            blogId={blog._id.toString()}
+            initialLikes={blog.likes}
+            initiallyLiked={blog.likedBy?.includes(userId as string)}
+          />
+            <button
+          className="flex cursor-pointer items-center gap-2"
+        >
+          <BiSolidCommentDetail className="text-2xl" />
+          {commentCount}
+        </button>
+        </div>
 
+        <div className="flex items-center gap-6">
+          <button className="hover:text-white">
+            <i className="text-2xl">🔖</i>
+          </button>
+          <button className="hover:text-white">
+            <i className="text-2xl">📤</i>
+          </button>
+        </div>
+      </div>
+      <CommentButton blogId={blog._id.toString()} />
+
+      <CommentSection blogId={blog._id.toString()} />
     </main>
   );
 }

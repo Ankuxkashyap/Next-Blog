@@ -52,7 +52,7 @@ export function Search() {
   };
 
   return (
-    <div className="flex flex-col gap-2 relative w-full">
+    <div className="flex flex-col gap-2 relative ">
       <div className="flex flex-row gap-2">
         <input
           type="text"
